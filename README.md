@@ -4,8 +4,9 @@
 
 Nama | NRP
 --- | ---
-Amoes Noland | 5027231028
-Rafi' Afnaan Fathurrahman | 5027231040
+Mey Rosalina | 5027241004
+Rizqi Akbar Sukirman Putra | 5027241044
+M. Alfaeran Auriga Ruswandi | 5027241115
 
 ## Daftar Isi
 
