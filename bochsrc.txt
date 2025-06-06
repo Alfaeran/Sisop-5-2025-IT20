@@ -142,8 +142,8 @@ floppy_bootsig_check: disabled=0
 #   log: ./bochs.out
 #   log: /dev/tty
 #=======================================================================
-# Log bochs, gunakan /dev/null untuk non verbose console log
-log: -
+# Log bochs, use file to avoid panic on stderr console
+log: ./bochs.log
 
 #=======================================================================
 # LOG CONTROLS
@@ -181,7 +181,7 @@ debug: action=ignore
 # Examples:
 #   debugger_log: ./debugger.out
 #=======================================================================
-debugger_log: -
+debugger_log: ./debugger.log
 
 #=======================================================================
 # VGA_UPDATE_INTERVAL:
