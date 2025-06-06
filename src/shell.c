@@ -25,8 +25,6 @@ void updateUsername() {
   username[i] = '\0';
 }
 
-
-// Fungsi ini ambil hasil acak sederhana pakai getBiosTick
 void randomAnswer() {
   int r = mod(getBiosTick(), 3);
   if (r == 0) {
@@ -34,7 +32,7 @@ void randomAnswer() {
   } else if (r == 1) {
     printString("yo\r\n");
   } else {
-    printString("sygau ini soal baru\r\n");
+    printString("sygau\r\n");
   }
 }
 
@@ -53,7 +51,6 @@ void shell() {
 
     readString(buf);
 
-    // Hilangkan newline
     i = 0;
     while (buf[i] != '\0') {
       if (buf[i] == '\r' || buf[i] == '\n') {
@@ -65,7 +62,6 @@ void shell() {
 
     parseCommand(buf, cmd, arg);
 
-    // Tambah perintah yogurt yang random jawabannya dari fungsi randomAnswer()
     if (strcmp(cmd, "yogurt")) {
       randomAnswer();
 
@@ -184,13 +180,11 @@ void shell() {
   }
 }
 
-// Warna
 void setColorRed()    { currentColor = 0x04; }
 void setColorYellow() { currentColor = 0x0E; }
 void setColorBlue()   { currentColor = 0x01; }
 void resetColor()     { currentColor = 0x07; }
 
-// Parsing command dan argumen
 void parseCommand(char *buf, char *cmd, char arg[2][64]) {
   int i = 0, j = 0, argIndex = 0;
 
