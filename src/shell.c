@@ -49,12 +49,12 @@ void shell() {
     printString(username);
     printString("> ");
 
-    readString(buf);
+    readString(yo);
 
     i = 0;
-    while (buf[i] != '\0') {
-      if (buf[i] == '\r' || buf[i] == '\n') {
-        buf[i] = '\0';
+    while (yo[i] != '\0') {
+      if (yo[i] == '\r' || yo[i] == '\n') {
+        yo[i] = '\0';
         break;
       }
       i++;
@@ -185,28 +185,28 @@ void setColorYellow() { currentColor = 0x0E; }
 void setColorBlue()   { currentColor = 0x01; }
 void resetColor()     { currentColor = 0x07; }
 
-void parseCommand(char *buf, char *cmd, char arg[2][64]) {
+void parseCommand(char *yo, char *cmd, char arg[2][64]) {
   int i = 0, j = 0, argIndex = 0;
 
   clear(cmd, 64);
   clear(arg[0], 64);
   clear(arg[1], 64);
 
-  while (buf[i] != ' ' && buf[i] != '\0') {
-    cmd[i] = buf[i];
+  while (yo[i] != ' ' && yo[i] != '\0') {
+    cmd[i] = yo[i];
     i++;
   }
   cmd[i] = '\0';
 
-  if (buf[i] == ' ') i++;
+  if (yo[i] == ' ') i++;
 
-  while (buf[i] != '\0' && argIndex < 2) {
+  while (yo[i] != '\0' && argIndex < 2) {
     j = 0;
-    while (buf[i] != ' ' && buf[i] != '\0') {
-      arg[argIndex][j++] = buf[i++];
+    while (yo[i] != ' ' && yo[i] != '\0') {
+      arg[argIndex][j++] = yo[i++];
     }
     arg[argIndex][j] = '\0';
     argIndex++;
-    if (buf[i] == ' ') i++;
+    if (yo[i] == ' ') i++;
   }
 }
