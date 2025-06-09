@@ -300,7 +300,7 @@ void clearScreen() {
 
 **shell.c**
 
-```user```, ```hostname```, ```username```: Untuk menampilkan prompt seperti user@Storm> .
+```user```, ```hostname```, ```username```: Untuk menampilkan prompt seperti ```user@Storm>``` .
 
 ```currentColor```: Menyimpan warna teks aktif.
 
