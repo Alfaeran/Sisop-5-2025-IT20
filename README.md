@@ -179,5 +179,232 @@ https://github.com/user-attachments/assets/1cfa66b1-b2f5-4e3e-a4b2-ec8b012f6fbb
 
 
 ## Laporan
+**kernel.asm**
 
-> Isi sesuai pengerjaan.
+```_getBiosTick```
+Mengambil jumlah tick BIOS sejak sistem dinyalakan menggunakan interrupt 0x1A. Nilai DX:CX menyimpan total tick 18.2 per detik.
+
+```
+_getBiosTick:
+  mov ah, 0x00
+  int 0x1A
+  mov ax, dx
+  mov dx, cx
+  ret
+```
+
+Hasilnya dipindahkan ke AX dan DX sebelum keluar dengan ret.
+
+```_putInMemory```
+Memasukkan karakter (char) ke alamat memori tertentu (untuk menulis ke video memory 0xB800).
+
+```
+_putInMemory:
+	push bp
+	mov bp,sp
+	push ds
+	mov ax,[bp+4]
+	mov si,[bp+6]
+	mov cl,[bp+8]
+	mov ds,ax
+	mov [si],cl
+	pop ds
+	pop bp
+	ret
+
+```
+
+```_interrupt```
+Memanggil int dari C ke assembly.
+
+Parameter:
+
+- int number
+
+- AX, BX, CX, DX
+
+```
+_interrupt:
+	push bp
+	mov bp,sp
+	mov ax,[bp+4]  //number
+	push ds
+	mov bx,cs
+	mov ds,bx
+	mov si,intr
+	mov [si+1],al
+	pop ds
+	mov ax,[bp+6]
+	mov bx,[bp+8]
+	mov cx,[bp+10]
+	mov dx,[bp+12]
+
+intr:	int 0x00 //akan diganti nilainya dengan number
+
+	mov ah,0
+	pop bp
+	ret
+```
+
+**kernel.c**
+
+```printString(char *str)```
+Menampilkan string ke layar satu per satu karakter via interrupt video 0x10, mode 0x0E.
+```
+void printString(char *str) {
+    int i = 0;
+    while (str[i] != '\0') {
+        interrupt(0x10, 0x0E00 + str[i], 0, 0, 0);
+        i++;
+    }
+}
+```
+
+```readString(char *buf)```
+Membaca input dari keyboard hingga Enter. Menangani Backspace juga, mencetak karakter saat diketik.
+```
+void readString(char *buf) {
+    char c;
+    int i = 0;
+
+    while (1) {
+        c = interrupt(0x16, 0, 0, 0, 0);
+        if (c == 13) { // Enter
+            buf[i] = '\0';
+            printString("\r\n");
+            break;
+        } else if (c == 8) { // Backspace
+            if (i > 0) {
+                i--;
+                printString("\b \b");
+            }
+        } else {
+            buf[i++] = c;
+            interrupt(0x10, 0x0E00 + c, 0, 0, 0);
+        }
+    }
+}
+```
+
+```clearScreen()```
+Membersihkan layar video memory (0xB800) dengan spasi ' ' dan warna default 0x07 (abu-abu).
+```
+void clearScreen() {
+    int i;
+    for (i = 0; i < 25 * 80; i++) {
+        putInMemory(0xB800, i * 2, ' ');
+        putInMemory(0xB800, i * 2 + 1, 0x07);
+    }
+}
+```
+
+**shell.c**
+
+```user```, ```hostname```, ```username```: Untuk menampilkan prompt seperti user@Storm> .
+
+```currentColor```: Menyimpan warna teks aktif.
+
+Fungsi Utama:
+
+```updateUsername()```
+Menggabungkan ```user``` + ```hostname``` ke username.
+
+```randomAnswer()```
+Jawaban acak berdasarkan ```getBiosTick() % 3```.
+
+```shell() ...```
+Loop utama shell:
+
+- Mencetak prompt, kemudian membaca input ke buffer ```yo```
+
+- Parse jadi ```cmd```, ```arg[0]```, ```arg[1]```
+
+ akan mengecek perintah seperti:
+
+- ```yo```, ```gurt```, ```yogurt```: respons humor
+
+- ```user```: ubah nama user
+
+- ```grandcompany```: ubah warna + hostname (```maelstrom```, ```twinadder```, ```immortalflames```)
+
+- ```clear```: bersihkan layar + reset warna
+
+- ```add```, ```sub```, ```mul```, ```div```: operasi aritmatika
+
+- Unknown command: tampilkan kembali input
+
+Fungsi warna:
+
+- ```setColorRed()``` → 0x04
+
+- ```setColorYellow()``` → 0x0E
+
+- ```setColorBlue()``` → 0x01
+
+- ```resetColor()``` → 0x07
+
+```parseCommand(char *yo, char *cmd, char arg[2][64])```
+Memisahkan input string ke cmd dan maksimal 2 argumen. Menggunakan spasi sebagai delimiter.
+
+**Headers**
+
+```std_type.h```
+Definisi tipe: ```byte```, ```bool```
+
+Konstanta: true, false
+
+```std_lib.h```
+Deklarasi fungsi utilitas:
+
+- ```div```, ```mod```: pembagian & modulo
+
+- ```strcmp```, ```strcpy```, ```clear```
+
+- ```atoi```, ```itoa```: konversi antara string dan integer
+
+```kernel.h```
+Deklarasi fungsi dan eksternal untuk Assembly seperti ```putInMemory```, ```interrupt```, ```getBiosTick```.
+
+```shell.h```
+Deklarasi untuk shell, parseCommand, dan pengatur warna.
+
+**Makefile**
+
+```prepare```:           → Buat folder bin/
+
+```bootloader```:        → Compile bootloader.asm → binary
+
+```stdlib```:            → Compile std_lib.c → object
+
+```shell```:            → Compile shell.c → object
+
+```kernel```:           → Compile kernel.c + kernel.asm → object
+
+```link```:             → Link semua object → kernel.bin lalu gabung bootloader
+
+```build```:            → Shortcut: build seluruh OS
+
+```
+prepare:
+	mkdir -p bin
+
+bootloader:
+	nasm src/bootloader.asm -f bin -o bin/bootloader
+
+stdlib:
+	i386-elf-gcc -m32 -ffreestanding -c src/std_lib.c -o bin/std_lib.o
+
+shell:
+	i386-elf-gcc -m32 -ffreestanding -c src/shell.c -o bin/shell.o
+
+kernel:
+	i386-elf-gcc -m32 -ffreestanding -c src/kernel.c -o bin/kernel.o
+	nasm src/kernel.asm -f elf -o bin/kernelasm.o
+
+link:
+	i386-elf-ld -m elf_i386 -Ttext 0x1000 -o bin/kernel.bin bin/kernel.o bin/std_lib.o bin/shell.o bin/kernelasm.o --oformat binary
+	cat bin/bootloader bin/kernel.bin > bin/os-image
+
+build: prepare bootloader stdlib shell kernel link
+```
+
