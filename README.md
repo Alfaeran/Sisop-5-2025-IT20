@@ -4,9 +4,12 @@
 
 Nama | NRP
 --- | ---
-Mey Rosalina | 5027241004
-Rizqi Akbar Sukirman Putra | 5027241044
+Evan Christian Nainggolan | 5027241026
+Ahmad Rafi Fadhillah Dwiputra | 5027241068
+Maritza Adelia Sucipto | 5027241111
 M. Alfaeran Auriga Ruswandi | 5027241115
+Zahra Hafizha | 5027241121
+
 
 ## Daftar Isi
 
